@@ -1,0 +1,30 @@
+.page-title {
+  font-size: 20px;
+  color: #2574a9;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.search-bar {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.business-name {
+  color: #2574a9;
+}
+
+.checkbox-group {
+  margin-bottom: 20px;
+  margin-left: 22px;
+}
+
+.buttons-section {
+  margin-bottom: 20px;
+  margin-left: 22px;
+}
+
+.below-accordion {
+  margin-left: 35px;
+  margin-right: 35px;
+}

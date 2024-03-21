@@ -1,60 +1,214 @@
-// This class is used to fetch Account records based on certain filters
-public without sharing class getAccountsByBusinessCategory {
+import { LightningElement, wire, track} from "lwc";
+import { getPicklistValues } from "lightning/uiObjectInfoApi";
+import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import filterAccounts from "@salesforce/apex/getAccountsByBusinessCategory.filterAccounts";
+import getBusinessCategoryPicklistValues from '@salesforce/apex/getAccountsByBusinessCategory.getBusinessCategoryPicklistValues';
+import ACCOUNT_OBJECT from "@salesforce/schema/Account";
+import COUNTY from "@salesforce/schema/Account.COUNTY__c";
+import { NavigationMixin } from "lightning/navigation";
 
-    // Get the ID of the 'Business_Registration' record type
-    // This is used to filter the accounts by record type in the SOQL queries and in the LWC to select correct picklist values
-    
-    public static String getBusinessRegistrationRecordTypeId() { 
-        return Schema.SObjectType.Account.getRecordTypeInfosByName().get('Business Registration').getRecordTypeId(); 
+export default class FilterAccountByBusinessCategory extends NavigationMixin(
+  LightningElement
+) {
+  searchKey;
+  showData = false;
+  newOptions;
+  businessCategories = [];
+  counties = [];
+  data = [];
+  @track accounts;
+  defaultValues = [];
+  options;
+  countyOptions;
+  hasRendered = false;
+
+  /**
+   * @method businessCategoryOptions
+   * @param {object} param0 - The response object containing error and data
+   * @description Retrieves the picklist values for the accountidcategory field
+   */
+
+  @wire(getBusinessCategoryPicklistValues)
+  businessCategoryOptions({ error, data }) {
+      console.log("data", JSON.stringify(data));
+      console.log("error", JSON.stringify(error));
+      if (data) {
+      this.options = data.values;
+      let newOptions = [];
+      let defaultVal = [];
+
+      // Loop through the picklist values and create options
+      for (let i = 0, l = this.options.length; i < l; i++) {
+        let option = {};
+        option.label = this.options[i].label;
+        option.value = this.options[i].value;
+        defaultVal.push(option.value);
+        newOptions.push(option);
+      }
+      this.options = newOptions;
+      this.defaultValues = defaultVal;
+    } else if (error) {
+      this.error = error;
+      this.data = undefined;
+    }
+  }
+
+  @wire(getPicklistValues, {
+    recordTypeId: "01235000000GHVcAAO",
+    fieldApiName: COUNTY
+  })
+  countyPicklistOptions({ error, data }) {
+    console.log("data", JSON.stringify(data));
+    console.log("error", JSON.stringify(error));
+    if (data) {
+      this.countyOptions = data.values;
+      let newOptions = [];
+      let defaultVal = [];
+
+      // Loop through the picklist values and create options
+      for (let i = 0, l = this.countyOptions.length; i < l; i++) {
+        let option = {};
+        option.label = this.countyOptions[i].label;
+        option.value = this.countyOptions[i].value;
+        defaultVal.push(option.value);
+        newOptions.push(option);
+      }
+      this.countyOptions = newOptions;
+      this.defaultValues = defaultVal;
+    } else if (error) {
+      this.error = error;
+      this.data = undefined;
+    }
+  }
+
+  /**
+   * @method renderedCallback
+   * @description Callback function that is called after the component is rendered
+   */
+  renderedCallback() {
+    if (this.hasRendered === false) {
+      // Call the filterAccounts Apex method to retrieve the filtered accounts
+      filterAccounts({
+        filterCategories: this.businessCategories,
+        filterCounties: this.counties,
+        searchkey: this.searchKey
+      })
+        .then((result) => {
+          this.accounts = result;
+          this.showData = true;
+        })
+        .catch((error) => {
+          // Display an error toast if the filter cannot be applied
+          this.dispatchEvent(
+            new ShowToastEvent({
+              title: "Unable to apply filter",
+              message: error.body.message,
+              variant: "error"
+            })
+          );
+        });
+      this.hasRendered = true;
+    }
+  }
+
+  /**
+   * @method handleFilterChange
+   * @param {object} event - The event object containing the filter change information
+   * @description Handles the change event of the filter inputs
+   */
+  handleFilterChange(event) {
+    if (event.target.dataset.type === "searchBar") {
+      this.searchKey = event.target.value;
+    } else if (event.target.dataset.type === "filter") {
+      this.businessCategories = event.detail.value;
+    } else if (event.target.dataset.type === "countyFilter") {
+      this.counties = event.detail.value;
     }
 
-    // This method is exposed to Aura components and is not cacheable
-    // It takes a filter category and a search key as parameters
-    @AuraEnabled(cacheable=false)
-    public static List<Account> filterAccounts (List<String> filterCategories, List<String> filterCounties, String searchkey) {
-        
-        System.debug('Entering filterAccounts method');
-        System.debug('filterCategories: ' + filterCategories);
-        System.debug('filterCounties: ' + filterCounties);
-        System.debug('searchkey: ' + searchkey);
-        
-        // Initialize an empty list to store the results
-        List<Account> results = new List<Account>();
+    // Call the filterAccounts Apex method with the updated search key and filter areas
+    filterAccounts({
+      searchkey: this.searchKey,
+      filterCategories: this.businessCategories,
+      filterCounties: this.counties
+    })
+      .then((result) => {
+        this.accounts = result;
+        this.showData = true;
+      })
+      .catch((error) => {
+        // Display an error toast if the filter cannot be applied
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: "Unable to apply filter",
+            message: error.body.message,
+            variant: "error"
+          })
+        );
+      });
+  }
 
-        // Prepare the search key for the SOQL LIKE clause
-        String key = '%' + searchkey + '%';
-        
-        String businessRegistrationRecordTypeId = getBusinessRegistrationRecordTypeId();
-            
-        // If no filter category is provided and no search key is provided, fetch all accounts of 'Business_Registration' record type
-        String accountQuery = 'SELECT Id, Name, Business_Category__c, Business_Description__c, County__c, BillingCity, Website FROM Account WHERE RecordTypeId = :businessRegistrationRecordTypeId';
+  /**
+   * @method navigateToAccount
+   * @param {object} event - The event object
+   * @description Navigates to the selected account record page
+   */
+  navigateToAccount(event) {
+    this[NavigationMixin.Navigate]({
+      type: "standard__recordPage",
+      attributes: {
+        recordId: event.target.dataset.type,
+        objectApiName: ACCOUNT_OBJECT.objectApiName,
+        actionName: "view"
+      }
+    });
+  }
 
-        // If filter categories are provided, add ' AND Business_Category__c IN :filterCategories' to the query
-        if (filterCategories != null && filterCategories.size() > 0) {
-            accountQuery += ' AND Business_Category__c IN :filterCategories';
-        }    
-        // If filter counties are provided, add ' AND County__c IN :filterCounties' to the query
-        if (filterCounties != null && filterCounties.size() > 0) {
-            accountQuery += ' AND County__c IN :filterCounties';
-        }
-        // If a search key is provided, add ' AND Name LIKE :key' to query
-        if (searchkey != null && searchkey != '') {
-            accountQuery += ' AND (Name LIKE :key OR Business_Description__c LIKE :key)';
-        }
-        // Sort results in ascending order regardless of what the final query looks like
-        accountQuery += ' ORDER BY Name ASC';
+  refreshData() {
+    // Call the filterAccounts Apex method with the updated search key and filter areas
+    filterAccounts({
+      searchkey: this.searchKey,
+      filterCategories: this.businessCategories,
+      filterCounties: this.counties
+    })
+      .then((result) => {
+        this.accounts = result;
+        this.showData = true;
+      })
+      .catch((error) => {
+        // Display an error toast if the filter cannot be applied
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: "Unable to apply filter",
+            message: error.body.message,
+            variant: "error"
+          })
+        );
+      });
+  }
 
-        // Debug log the SOQL query
-        System.debug(accountQuery);
+  selectAll(event) {
+    const type = event.target.dataset.type;
 
-        try {
-            // Execute the SOQL query and store the results
-            results = Database.query(accountQuery);
-        } catch (QueryException e) {
-            System.debug('An error occurred while executing the query: ' + e.getMessage());
-        }
-        
-        // Return the results
-        return results;
+    if (type === "businessCategories") {
+      this.businessCategories = this.options.map((option) => option.value);
+    } else if (type === "counties") {
+      this.counties = this.countyOptions.map((option) => option.value);
     }
+
+    // Call the refreshData method to refresh the data
+    this.refreshData();
+  }
+
+  clearAll(event) {
+    const type = event.target.dataset.type;
+
+    if (type === "businessCategories") {
+      this.businessCategories = [];
+    } else if (type === "counties") {
+      this.counties = [];
+    }
+
+    // Call the refreshData method to refresh the data
+    this.refreshData();
+  }
 }

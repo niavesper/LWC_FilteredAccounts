@@ -1,30 +1,73 @@
+/* Differences in margin pixel numbers are often due to default margins being applied
+(e.g., to the accordion sections) and the need to align elements with and wthout default margins*/
+
+/* Define CSS variables */
+:host {
+  --primary-color: #2574a9;
+  --primary-margin: 20px;
+}
+
+/* Color of the page title and Business Name (blue so it's recognized as a hyperlink) */
+.page-title, .business-name {
+  color: var(--primary-color);
+}
+
+/* Properties of the page title */
 .page-title {
   font-size: 20px;
-  color: #2574a9;
   font-weight: bold;
   margin-bottom: 15px;
 }
 
-.search-bar {
-  margin-top: 20px;
-  margin-bottom: 20px;
+/* Properties of the search bar, the two checkbox groups, and the two button sections */
+.search-bar, .checkbox-group, .buttons-section {
+  margin-top: var(--primary-margin);
+  margin-bottom: var(--primary-margin);
 }
 
-.business-name {
-  color: #2574a9;
+/* Properties of the two checkbox groups and the two button sections */
+.checkbox-group, .buttons-section {
+  margin-left: 22px;
 }
 
+/* Property of the two checkbox groups */
 .checkbox-group {
-  margin-bottom: 20px;
-  margin-left: 22px;
+  columns: 4;
 }
 
-.buttons-section {
-  margin-bottom: 20px;
-  margin-left: 22px;
-}
-
+/* Properties of the section that contains everything below the accordion */
 .below-accordion {
   margin-left: 35px;
   margin-right: 35px;
+}
+
+/* Makes the upper border of the accounts table header thicker than the lines between each row */
+.thick-border {
+  border-width: 2px;
+}
+
+/* Properties of the accounts table */
+.table-wrapper {
+  height: 600px;
+  overflow: auto;
+}
+
+/* Properties of the accounts table header */
+.table-wrapper th {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+/* Keeps the account table the same width,
+even when the search bar entry returns no results*/
+
+.table-div {
+  min-width: 1050px;
+}
+
+/* Adds a faux footer (empty space) below the lightning card */
+.bottom-space {
+  height: 50px;
 }

@@ -1,9 +1,9 @@
-import { LightningElement, wire, track, api } from "lwc";
+import { LightningElement, wire, track} from "lwc";
 import { getPicklistValues } from "lightning/uiObjectInfoApi";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import filterAccounts from "@salesforce/apex/getAccountsByBusinessCategory.filterAccounts";
+import getBusinessCategoryPicklistValues from '@salesforce/apex/getAccountsByBusinessCategory.getBusinessCategoryPicklistValues';
 import ACCOUNT_OBJECT from "@salesforce/schema/Account";
-import BUSINESS_CATEGORY_FIELD from "@salesforce/schema/Account.Business_Category__c";
 import COUNTY from "@salesforce/schema/Account.COUNTY__c";
 import { NavigationMixin } from "lightning/navigation";
 
@@ -25,17 +25,14 @@ export default class FilterAccountByBusinessCategory extends NavigationMixin(
   /**
    * @method businessCategoryOptions
    * @param {object} param0 - The response object containing error and data
-   * @description Retrieves the picklist values for the business category field
+   * @description Retrieves the picklist values for the accountidcategory field
    */
 
-  @wire(getPicklistValues, {
-    recordTypeId: "01235000000GHVcAAO",
-    fieldApiName: BUSINESS_CATEGORY_FIELD
-  })
+  @wire(getBusinessCategoryPicklistValues)
   businessCategoryOptions({ error, data }) {
-    console.log("data", JSON.stringify(data));
-    console.log("error", JSON.stringify(error));
-    if (data) {
+      console.log("data", JSON.stringify(data));
+      console.log("error", JSON.stringify(error));
+      if (data) {
       this.options = data.values;
       let newOptions = [];
       let defaultVal = [];
@@ -215,3 +212,4 @@ export default class FilterAccountByBusinessCategory extends NavigationMixin(
     this.refreshData();
   }
 }
+

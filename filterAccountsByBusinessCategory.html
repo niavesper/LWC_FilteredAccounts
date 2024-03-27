@@ -1,3 +1,12 @@
+<!--
+  This is the main template for the FilterAccountsByBusinessCategory LWC. It displays a list of registered
+  veteran-owned businesses and provides filtering options by business category, county, and search key. The LWC lives
+  on the Experience Cloud site Business Registrations (https://vbr.veterans.utah.gov/s/) and is used by the public to search for registered
+  veteran-owned businesses in Utah. The LWC is used in conjunction with the Apex class GetAccountsByBusinessCategory.
+  Author: niavesper
+  Date: 03/26/2024
+  Version: 1.0
+-->
 <template>
   <header>
     <h1 class="slds-form-element__label page-title">
@@ -10,7 +19,7 @@
     <lightning-card>
       <lightning-layout multiple-rows="true">
         <lightning-layout-item>
-          <template if:true={options}>
+          <template if:true={businessCategoryOptions}>
             <section>
               <!-- Accordion containing business category checkboxes -->
               <lightning-accordion allow-multiple-sections-open="true">
@@ -25,8 +34,8 @@
                       class="checkbox-group"
                       name="businessCategories"
                       label="Business Categories"
-                      data-type="filter"
-                      options={options}
+                      data-type="businessCategoryFilter"
+                      options={businessCategoryOptions}
                       value={businessCategories}
                       variant="label-hidden"
                       onchange={handleFilterChange}
@@ -230,3 +239,4 @@
   <!-- Space below the card -->
   <div class="bottom-space"></div>
 </template>
+

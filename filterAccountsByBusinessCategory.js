@@ -1,8 +1,8 @@
 /**
  * @fileoverview This JS is part of the LWC filterAccountByBusinessCategory that provides functionality to filter
  * Salesforce Account records by business category, county, and search key. The LWC lives on the Experience Cloud site
- * Business Registrations (https://vbr.veterans.utah.gov/s/) and is used by the public to search for registered
- * veteran-owned businesses in Utah. The LWC is used in conjunction with the Apex class GetAccountsByBusinessCategory.
+ * and is used by the public to search for registered veteran-owned businesses in the state. The LWC is used in conjunction
+ * with the Apex class GetAccountsByBusinessCategory.
  * @author niavesper
  * @date 03/26/2024
  * @version 1.0

@@ -1,5 +1,15 @@
-/* Differences in margin pixel numbers are often due to default margins being applied
-(e.g., to the accordion sections) and the need to align elements with and wthout default margins*/
+/*
+  This CSS file provides the styling for the filterAccountsByBusinessCategory LWC. 
+  The LWC lives on the Experience Cloud site and is used by the public to search for registered
+  veteran-owned businesses in the state. The LWC is used in conjunction with the Apex class GetAccountsByBusinessCategory.
+  
+  Note: Differences in margin pixel numbers are often due to default margins being applied
+  (e.g., to the accordion sections) and the need to align elements with and without default margins.
+  
+  Author: niavesper
+  Date: 03/26/2024
+  Version: 1.0
+*/
 
 /* Define CSS variables */
 :host {
@@ -61,10 +71,10 @@
 }
 
 /* Keeps the account table the same width,
-even when the search bar entry returns no results*/
-
-.table-div {
-  min-width: 1050px;
+both when filters are applied and when they aren't */
+.slds-table {
+  table-layout: fixed;
+  width: 100%; /* Ensure the table spans the full width of its container */
 }
 
 /* Adds a faux footer (empty space) below the lightning card */
